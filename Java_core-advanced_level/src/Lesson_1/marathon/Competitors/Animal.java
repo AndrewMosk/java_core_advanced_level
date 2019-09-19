@@ -1,4 +1,4 @@
-package Lesson_1.marathon;
+package Lesson_1.marathon.Competitors;
 
 public class Animal implements Competitor {
     String type;
@@ -13,6 +13,16 @@ public class Animal implements Competitor {
     @Override
     public boolean isOnDistance() {
         return onDistance;
+    }
+
+    @Override
+    public String getType() {
+        return type;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     public Animal(String type, String name, int maxRunDistance, int maxJumpHeight, int maxSwimDistance) {

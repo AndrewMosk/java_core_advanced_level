@@ -1,6 +1,7 @@
-package Lesson_1.marathon;
+package Lesson_1.marathon.Competitors;
 
 public class Human implements Competitor {
+    String type;
     String name;
 
     int maxRunDistance;
@@ -14,7 +15,18 @@ public class Human implements Competitor {
         return active;
     }
 
+    @Override
+    public String getType() {
+        return type;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
     public Human(String name) {
+        this.type = "Человек";
         this.name = name;
         this.maxRunDistance = 5000;
         this.maxJumpHeight = 30;
