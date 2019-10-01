@@ -4,8 +4,7 @@ import java.util.*;
 
 public class MainThread {
     private static final int size = 10000000;
-    private static final int threadNumber = 4;
-    private static final int h = size / threadNumber;
+    private static final int threadNumber = 3;
 
     public static void main(String[] args) {
         Result resultSingleThread = singleThread(initArray());
@@ -32,16 +31,22 @@ public class MainThread {
 
     private static Result multiThread(float[] originalArray){
         long startTime = System.currentTimeMillis();
-
-        //двумерный массив для приема вычислений
-        float[][] outputArrays = new float[threadNumber][h];
-
         HashSet<Thread> threadHashSet = new HashSet<>();
 
+        //двумерный массив для приема вычислений
+        int subArrayLength = size/threadNumber;
+        //инициализирую двумерный массив, в который разбивать основной
+        float[][] outputArrays = new float[threadNumber][];
+
         //делю массив, создаю потоки
-        for (int i=0, startPos = 0; i<threadNumber; i++, startPos += h){
-            float[] array = outputArrays[i]; //массив приемник
-            System.arraycopy(originalArray, startPos, array, 0, h);
+        for (int i=0, startPos = 0; i<threadNumber; i++, startPos += subArrayLength){
+            if (i+1==threadNumber){
+                subArrayLength += size%threadNumber;
+            }
+
+            float[] array = new float[subArrayLength];
+            System.arraycopy(originalArray, startPos, array, 0, subArrayLength);
+            outputArrays[i] = array;
 
             int finalStartPos = startPos;
             Thread t = new Thread(new Runnable() {
@@ -67,8 +72,12 @@ public class MainThread {
             e.printStackTrace();
         }
         //обратная склейка
-        for (int i =0, startPos = 0; i<threadNumber; i++, startPos +=h){
-            System.arraycopy(outputArrays[i], 0, originalArray, startPos, h);
+        subArrayLength = size/threadNumber;
+        for (int i =0, startPos = 0; i<threadNumber; i++, startPos +=subArrayLength){
+            if (i+1==threadNumber){
+                subArrayLength += size%threadNumber;
+            }
+            System.arraycopy(outputArrays[i], 0, originalArray, startPos, subArrayLength);
 
         }
         long finishTime = System.currentTimeMillis();
