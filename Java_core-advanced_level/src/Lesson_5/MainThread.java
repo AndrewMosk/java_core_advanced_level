@@ -33,16 +33,13 @@ public class MainThread {
         long startTime = System.currentTimeMillis();
         HashSet<Thread> threadHashSet = new HashSet<>();
 
-        //двумерный массив для приема вычислений
         int subArrayLength = size/threadNumber;
-        //инициализирую двумерный массив, в который разбивать основной
+        //инициализирую двумерный массив, в который буду разбивать основной
         float[][] outputArrays = new float[threadNumber][];
 
         //делю массив, создаю потоки
         for (int i=0, startPos = 0; i<threadNumber; i++, startPos += subArrayLength){
-            if (i+1==threadNumber){
-                subArrayLength += size%threadNumber;
-            }
+            if (i+1==threadNumber) subArrayLength += size % threadNumber;
 
             float[] array = new float[subArrayLength];
             System.arraycopy(originalArray, startPos, array, 0, subArrayLength);
@@ -73,13 +70,12 @@ public class MainThread {
         }
         //обратная склейка
         subArrayLength = size/threadNumber;
-        for (int i =0, startPos = 0; i<threadNumber; i++, startPos +=subArrayLength){
-            if (i+1==threadNumber){
-                subArrayLength += size%threadNumber;
-            }
-            System.arraycopy(outputArrays[i], 0, originalArray, startPos, subArrayLength);
+        for (int i = 0, startPos = 0; i<threadNumber; i++, startPos += subArrayLength){
+            if (i+1 == threadNumber) subArrayLength += size % threadNumber;
 
+            System.arraycopy(outputArrays[i], 0, originalArray, startPos, subArrayLength);
         }
+
         long finishTime = System.currentTimeMillis();
         double executionTime = ((double)finishTime-(double)startTime)/1000.0;
 
