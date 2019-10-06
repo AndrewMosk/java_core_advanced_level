@@ -1,4 +1,4 @@
-package Lesson_4.css.sample;
+package Lesson_4.VBox;
 
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.StackPane;

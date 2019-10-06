@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?scenebuilder-stylesheet /css/Style.css?>
+<?scenebuilder-stylesheet /Lesson_4/CSS/Style.css?>
 <?import javafx.scene.layout.VBox?>
 <?import java.net.URL?>
 <?import javafx.scene.layout.HBox?>
@@ -13,8 +13,8 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.geometry.Insets?>
 
-<BorderPane fx:id="pane" fx:controller="Lesson_4.css.sample.Controller" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.121">
-    <stylesheets><URL value="@/Lesson_4/css/CSS/Style.css" /></stylesheets>
+<BorderPane fx:id="pane" fx:controller="Lesson_4.VBox.ControllerVBox" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.121">
+    <stylesheets><URL value="@/Lesson_4/VBox/css/Style.css" /></stylesheets>
     <top>
         <MenuBar>
             <Menu mnemonicParsing="false" text="File">
