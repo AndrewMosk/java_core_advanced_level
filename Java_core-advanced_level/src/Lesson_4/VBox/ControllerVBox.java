@@ -1,6 +1,7 @@
 package Lesson_4.VBox;
 
 import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -45,32 +46,11 @@ public class ControllerVBox implements Initializable {
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
 
-            // нагуглил такое решение, но не сработало
-//            Task task = new Task<Void >() {
-//                @Override
-//                public  Void call()  {
-//                    try {
-//                        while (true) {
-//                            String msg = in.readUTF();
-//                            if (msg.equalsIgnoreCase("/end")) break;
-//                            vBox.getChildren().add(new TextMessage(msg));
-//                        }
-//                    }catch (IOException e){
-//                        e.printStackTrace();
-//                    }
-//                    return null;
-//                }
-//            };
-//            Thread t = new Thread(task);
-//            t.start();
-
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
+            Task<Void> task = new Task<Void>() {
+                @Override protected Void call() {
                     try {
                         while (true){
                             String msg = in.readUTF();
-                            //без этой конструкции не работает, хотя гугл говорит, что так делать плохо... типа поток в потоке вызывать
                             Platform.runLater(() -> addText(msg));
                         }
                     }catch (IOException e){
@@ -82,8 +62,10 @@ public class ControllerVBox implements Initializable {
                             e.printStackTrace();
                         }
                     }
+                    return null;
                 }
-            });
+            };
+            Thread thread =new Thread(task);
             thread.setDaemon(true);
             thread.start();
 
@@ -106,7 +88,9 @@ public class ControllerVBox implements Initializable {
         infoWindow.setTitle("Info");
         infoWindow.getIcons().add(imageInfo);
         infoWindow.setScene(new Scene(rootInfo, 350, 100));
-        infoWindow.initModality(Modality.WINDOW_MODAL); //почему-то не сработало
+        infoWindow.setResizable(false);
+        infoWindow.initOwner(MainVBox.getPrimaryStage());
+        infoWindow.initModality(Modality.WINDOW_MODAL);
         infoWindow.show();
     }
 

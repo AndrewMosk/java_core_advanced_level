@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?scenebuilder-stylesheet /css/Style.css?>
+<?scenebuilder-stylesheet /Lesson_4/TextArea/css/Style.css?>
 <?import javafx.scene.layout.VBox?>
 <?import java.net.URL?>
 <?import javafx.scene.control.TextArea?>

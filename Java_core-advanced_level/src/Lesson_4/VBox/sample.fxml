@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?scenebuilder-stylesheet /Lesson_4/CSS/Style.css?>
+<?scenebuilder-stylesheet /Lesson_4/VBox/css/Style.css?>
 <?import javafx.scene.layout.VBox?>
 <?import java.net.URL?>
 <?import javafx.scene.layout.HBox?>
