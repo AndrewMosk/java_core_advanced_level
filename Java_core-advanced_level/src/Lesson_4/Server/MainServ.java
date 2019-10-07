@@ -15,13 +15,14 @@ class MainServ {
         int port = 8189;
 
         try {
+            AuthService.connect();
             server = new ServerSocket(port);
             System.out.println("Сервер запущен");
 
             while (true){
                 socket = server.accept();
                 System.out.println("Клиент подключился");
-                clients.add(new ClientHandler(this, socket));
+                new ClientHandler(this, socket);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -32,11 +33,20 @@ class MainServ {
                 e.printStackTrace();
             }
         }
+        AuthService.disconnect();
     }
 
     void broadcastMessage(String msg){
         for (ClientHandler client: clients) {
             client.sendMessage(msg);
         }
+    }
+
+    void subscribe(ClientHandler client){
+        clients.add(client);
+    }
+
+    void unsubscribe(ClientHandler client){
+        clients.remove(client);
     }
 }
