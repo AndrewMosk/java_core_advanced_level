@@ -13,6 +13,10 @@ class ClientHandler {
     private MainServ serv;
     private String nick;
 
+    public String getNick() {
+        return nick;
+    }
+
     ClientHandler(MainServ serv, Socket socket) {
         try {
             this.socket = socket;
@@ -45,10 +49,13 @@ class ClientHandler {
                             if (msg.equalsIgnoreCase("/end")) {
                                 sendMessage("/clientClose");
                                 break;
+                            }else if (msg.startsWith("/w")){
+                                //сообщение конкретному клиенту
+                                String[] tokens = msg.split(" ");
+                                serv.singleMessage(buildMessage(tokens), nick, tokens[1]);
+                            }else {
+                                serv.broadcastMessage(nick + ": " + msg);
                             }
-                            //выходить из потока нужно по закрытию окна клиента, но реализовать не смог :-(
-                            //if (msg.equalsIgnoreCase("/end")) break;
-                            serv.broadcastMessage(nick + ": " +msg);
                         }
                     }catch (IOException | SQLException e){
                         e.printStackTrace();
@@ -75,6 +82,14 @@ class ClientHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private String buildMessage(String[] tokens){
+        String result = "";
+        for (int j = 2; j < tokens.length; j++) {
+            result = result + tokens[j] + " ";
+        }
+        return result.substring(0, result.length() - 1);
     }
 
     void sendMessage(String msg){

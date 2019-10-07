@@ -49,4 +49,12 @@ class MainServ {
     void unsubscribe(ClientHandler client){
         clients.remove(client);
     }
+
+    void singleMessage(String msg, String sourceNick, String recipientNick) {
+        for (ClientHandler client: clients) {
+            if (client.getNick().equals(recipientNick) || client.getNick().equals(sourceNick)){
+                client.sendMessage(sourceNick + ": " + msg);
+            }
+        }
+    }
 }
