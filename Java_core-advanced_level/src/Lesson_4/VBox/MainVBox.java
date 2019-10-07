@@ -24,7 +24,8 @@ public class MainVBox extends Application {
 
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         primaryStage.setTitle("Chat");
-        primaryStage.setScene(new Scene(root, 300, 500));
+        primaryStage.setResizable(false);
+        primaryStage.setScene(new Scene(root, 350, 600));
         primaryStage.show();
     }
     public static void main(String[] args) {

@@ -5,9 +5,9 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -20,8 +20,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.URL;
-import java.util.ResourceBundle;
 
 public class ControllerVBox {
     @FXML
@@ -38,11 +36,10 @@ public class ControllerVBox {
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
-
     private final String IP_ADDRESS = "localhost";
     private final int PORT = 8189;
-
     private boolean isAuthorized;
+
     @FXML
     HBox upperPanel;
     @FXML
@@ -52,7 +49,7 @@ public class ControllerVBox {
     @FXML
     PasswordField passwordField;
 
-    public void setAuthorized(boolean isAuthorized){
+    private void setAuthorized(boolean isAuthorized){
         this.isAuthorized = isAuthorized;
         if (!isAuthorized){
             upperPanel.setVisible(true);
@@ -68,7 +65,7 @@ public class ControllerVBox {
     }
 
 
-    public void connect() {
+    private void connect() {
         try {
             socket = new Socket(IP_ADDRESS,PORT);
             in = new DataInputStream(socket.getInputStream());
@@ -82,8 +79,10 @@ public class ControllerVBox {
                             if (str.startsWith("/authok")){
                                 setAuthorized(true);
                                 break;
-                            }else {
-                                //вывод сообщения о неудачной попытке входа. сделать каким-нибудь диалоговым окном
+                            }else if (str.equals("Ошибка аутентификаци")){
+                                Platform.runLater(() -> showAlertWithHeaderText(str, "неверно введена пара логин/пароль"));
+                            }else if (str.equals("Попытка повторного входа")){
+                                Platform.runLater(() -> showAlertWithHeaderText(str, "клиент с такими учетными данными уже воплнил вход"));
                             }
                         }
                         while (true){
@@ -160,15 +159,29 @@ public class ControllerVBox {
     }
 
     public void tryToAuth(ActionEvent actionEvent) {
-        if (socket == null || socket.isClosed()){
-            connect();
+        String login = loginField.getText();
+        String password = passwordField.getText();
+
+        if (!login.isEmpty() & !password.isEmpty()) {
+            if (socket == null || socket.isClosed()) {
+                connect();
+            }
+            try {
+                out.writeUTF("/auth " + login + " " + password);
+                loginField.clear();
+                passwordField.clear();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        try {
-            out.writeUTF("/auth " + loginField.getText() + " " + passwordField.getText());
-            loginField.clear();
-            passwordField.clear();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    }
+
+    private void showAlertWithHeaderText(String headerText, String contentText) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Внимание!");
+        alert.setHeaderText(headerText);
+        alert.setContentText(contentText);
+
+        alert.showAndWait();
     }
 }

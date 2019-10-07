@@ -2,11 +2,11 @@ package Lesson_4.Server;
 
 import java.sql.*;
 
-public class AuthService {
+class AuthService {
     private static Connection connection;
     private static Statement stmt;
 
-    public static void connect(){
+    static void connect(){
         try {
             Class.forName("org.sqlite.JDBC");
             connection = DriverManager.getConnection("jdbc:sqlite:mainDB.db");
@@ -16,7 +16,7 @@ public class AuthService {
         }
     }
 
-    public static String getNickByLoginAndPass(String login, String pass) throws SQLException {
+    static String getNickByLoginAndPass(String login, String pass) throws SQLException {
         String sql = String.format("SELECT nickname FROM main WHERE login='%s' AND password='%s'",login,pass);
 
         ResultSet rs = stmt.executeQuery(sql);
@@ -26,12 +26,11 @@ public class AuthService {
         return null;
     }
 
-    public static void disconnect(){
+    static void disconnect(){
         try {
             connection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
-
 }

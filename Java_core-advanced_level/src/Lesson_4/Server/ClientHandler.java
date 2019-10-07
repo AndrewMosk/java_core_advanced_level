@@ -13,7 +13,7 @@ class ClientHandler {
     private MainServ serv;
     private String nick;
 
-    public String getNick() {
+    String getNick() {
         return nick;
     }
 
@@ -33,13 +33,17 @@ class ClientHandler {
                             if (str.startsWith("/auth")){
                                 String[] tokens = str.split(" ");
                                 String currentNick = AuthService.getNickByLoginAndPass(tokens[1], tokens[2]);
-                                if (currentNick!=null){
-                                    sendMessage("/authok");
-                                    nick = currentNick;
-                                    serv.subscribe(ClientHandler.this);
-                                    break;
+                                if (currentNick!=null) {
+                                    if (serv.checkNick(currentNick)) {
+                                        sendMessage("/authok");
+                                        nick = currentNick;
+                                        serv.subscribe(ClientHandler.this);
+                                        break;
+                                    }else {
+                                        sendMessage("Попытка повторного входа");
+                                    }
                                 }else {
-                                    sendMessage("неверный логин/пароль");
+                                    sendMessage("Ошибка аутентификаци");
                                 }
                             }
                         }

@@ -42,6 +42,17 @@ class MainServ {
         }
     }
 
+    boolean checkNick(String nick){
+        boolean result = true;
+        for (ClientHandler client: clients) {
+            if (client.getNick().equals(nick)){
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+
     void subscribe(ClientHandler client){
         clients.add(client);
     }
