@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?scenebuilder-stylesheet /Lesson_4/CSS/Style.css?>
+<?import javafx.scene.layout.VBox?>
+<?import java.net.URL?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane fx:id="pane" fx:controller="Lesson_4.VBox.ControllerVBox" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.121">
+    <stylesheets><URL value="@/Lesson_4/VBox/css/Style.css" /></stylesheets>
+    <top>
+        <MenuBar>
+            <Menu mnemonicParsing="false" text="File">
+                <MenuItem mnemonicParsing="false" text="Close" fx:id="close" onAction="#closeWindow" />
+            </Menu>
+            <Menu mnemonicParsing="false" text="Edit">
+                <MenuItem mnemonicParsing="false" text="Clear window" fx:id="clear" onAction="#clearWindow" />
+            </Menu>
+            <Menu mnemonicParsing="false" text="Help">
+                <MenuItem mnemonicParsing="false" text="About" fx:id="about" onAction="#infoAbout" />
+            </Menu>
+        </MenuBar>
+    </top>
+
+    <left>
+        <ScrollPane>
+            <VBox fx:id="vBox"/>
+            <BorderPane.margin>
+                <Insets left="5.0" top="3.0" />
+            </BorderPane.margin>
+        </ScrollPane>
+    </left>
+    <bottom>
+        <HBox>
+            <TextField fx:id="textField" onAction="#sendMsg" promptText="Введите сообщение ..." HBox.hgrow="ALWAYS" />
+            <Button fx:id="btn1" contentDisplay="GRAPHIC_ONLY" onAction="#sendMsg" text="Send" prefHeight="25.0" prefWidth="30.0"/>
+        </HBox>
+    </bottom>
+</BorderPane>
