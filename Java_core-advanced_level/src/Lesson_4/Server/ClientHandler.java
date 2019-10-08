@@ -35,7 +35,7 @@ class ClientHandler {
                                 String currentNick = AuthService.getNickByLoginAndPass(tokens[1], tokens[2]);
                                 if (currentNick!=null) {
                                     if (serv.checkNick(currentNick)) {
-                                        sendMessage("/authOk");
+                                        sendMessage("/authOk " + currentNick);
                                         nick = currentNick;
                                         serv.subscribe(ClientHandler.this);
                                         break;
@@ -110,7 +110,6 @@ class ClientHandler {
 
     void sendMessage(String msg){
         try {
-            System.out.println(msg);
             out.writeUTF(msg);
         } catch (IOException e) {
             e.printStackTrace();

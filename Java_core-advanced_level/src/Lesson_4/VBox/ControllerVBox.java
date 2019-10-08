@@ -51,8 +51,6 @@ public class ControllerVBox {
     private Stage regStage = new Stage();
     private Stage infoStage = new Stage();
 
-    //String nick;
-
     private void setAuthorized(boolean isAuthorized){
         this.isAuthorized = isAuthorized;
         if (!isAuthorized){
@@ -65,8 +63,17 @@ public class ControllerVBox {
             VBoxUpperPanel.setManaged(false);
             bottomPanel.setVisible(true);
             bottomPanel.setManaged(true);
-//            Stage stage = MainVBox.getPrimaryStage();
-//            stage.setTitle(stage.getTitle() + " " + nick);
+        }
+    }
+
+    private void setNewTitle(String nick){
+        Stage stage = MainVBox.getPrimaryStage();
+
+        if(nick.isEmpty()){
+            stage.setTitle("Chat");
+        }else {
+            String newTitle = stage.getTitle() + " " + nick;
+            stage.setTitle(newTitle);
         }
     }
 
@@ -82,7 +89,9 @@ public class ControllerVBox {
                         while (true){
                             String str = in.readUTF();
                             if (str.startsWith("/authOk")){
+                                String[] tokens = str.split(" ");
                                 setAuthorized(true);
+                                Platform.runLater(() -> setNewTitle(tokens[1]));
                                 break;
                             }else if (str.equals("Ошибка аутентификаци")){
                                 Platform.runLater(() -> showAlertWithHeaderText(str, "Неверно введена пара логин/пароль"));
@@ -103,8 +112,13 @@ public class ControllerVBox {
                             String msg = in.readUTF();
                             if (msg.equalsIgnoreCase("/clientClose")) {
                                 setAuthorized(false);
+                                Platform.runLater(() -> {
+                                    setNewTitle("");
+                                    vBox.getChildren().clear();
+                                });
+                            }else {
+                                Platform.runLater(() -> addText(msg));
                             }
-                            Platform.runLater(() -> addText(msg));
                         }
                     }catch (IOException e){
                         e.printStackTrace();
@@ -191,7 +205,6 @@ public class ControllerVBox {
                 loginField.clear();
                 passwordField.clear();
                 if (operation.equals("/reg ")) {
-                    //nick = nickField.getText();
                     nickField.clear();
                 }
             } catch (IOException e) {
@@ -203,6 +216,12 @@ public class ControllerVBox {
     private void showAlertWithHeaderText(String headerText, String contentText) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Внимание!");
+
+        if (headerText.equals("Регистрация прошла успешно")){
+            alert.setAlertType(Alert.AlertType.INFORMATION);
+            alert.setTitle("Поздравляем!");
+        }
+
         alert.setHeaderText(headerText);
         alert.setContentText(contentText);
 
