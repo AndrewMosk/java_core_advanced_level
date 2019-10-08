@@ -26,15 +26,18 @@
                     <MenuItem mnemonicParsing="false" text="Clear window" fx:id="clear" onAction="#clearWindow" />
                 </Menu>
                 <Menu mnemonicParsing="false" text="Help">
-                    <MenuItem mnemonicParsing="false" text="About" fx:id="about" onAction="#infoAbout" />
+                    <MenuItem mnemonicParsing="false" text="About" fx:id="about" onAction="#openInfoWindow" />
                 </Menu>
             </MenuBar>
 
-            <HBox fx:id="upperPanel">
-                <TextField HBox.hgrow="ALWAYS" promptText="логин..." fx:id="loginField" />
-                <PasswordField promptText="пароль..." fx:id="passwordField" onAction="#tryToAuth" />
-                <Button text="Войти" onAction="#tryToAuth"/>
-            </HBox>
+            <VBox fx:id="VBoxUpperPanel">
+                <HBox>
+                    <TextField HBox.hgrow="ALWAYS" promptText="логин..." fx:id="loginField" />
+                    <PasswordField promptText="пароль..." fx:id="passwordField" onAction="#tryToAuth" />
+                    <Button text="Войти" onAction="#tryToAuth"/>
+                </HBox>
+                <HBox><Button fx:id="regButton" HBox.hgrow="ALWAYS" maxWidth="Infinity" text="Регистрация" onAction="#openRegistrationWindow"/></HBox>
+            </VBox>
         </VBox>
     </top>
 

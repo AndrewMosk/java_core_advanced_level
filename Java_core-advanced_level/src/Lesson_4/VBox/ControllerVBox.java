@@ -7,10 +7,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -41,29 +38,37 @@ public class ControllerVBox {
     private boolean isAuthorized;
 
     @FXML
-    HBox upperPanel;
-    @FXML
     HBox bottomPanel;
     @FXML
     TextField loginField;
     @FXML
     PasswordField passwordField;
+    @FXML
+    TextField nickField;
+    @FXML
+    VBox VBoxUpperPanel;
+
+    private Stage regStage = new Stage();
+    private Stage infoStage = new Stage();
+
+    //String nick;
 
     private void setAuthorized(boolean isAuthorized){
         this.isAuthorized = isAuthorized;
         if (!isAuthorized){
-            upperPanel.setVisible(true);
-            upperPanel.setManaged(true);
+            VBoxUpperPanel.setVisible(true);
+            VBoxUpperPanel.setManaged(true);
             bottomPanel.setVisible(false);
             bottomPanel.setManaged(false);
         }else {
-            upperPanel.setVisible(false);
-            upperPanel.setManaged(false);
+            VBoxUpperPanel.setVisible(false);
+            VBoxUpperPanel.setManaged(false);
             bottomPanel.setVisible(true);
             bottomPanel.setManaged(true);
+//            Stage stage = MainVBox.getPrimaryStage();
+//            stage.setTitle(stage.getTitle() + " " + nick);
         }
     }
-
 
     private void connect() {
         try {
@@ -76,13 +81,22 @@ public class ControllerVBox {
                     try {
                         while (true){
                             String str = in.readUTF();
-                            if (str.startsWith("/authok")){
+                            if (str.startsWith("/authOk")){
                                 setAuthorized(true);
                                 break;
                             }else if (str.equals("Ошибка аутентификаци")){
-                                Platform.runLater(() -> showAlertWithHeaderText(str, "неверно введена пара логин/пароль"));
+                                Platform.runLater(() -> showAlertWithHeaderText(str, "Неверно введена пара логин/пароль"));
                             }else if (str.equals("Попытка повторного входа")){
-                                Platform.runLater(() -> showAlertWithHeaderText(str, "клиент с такими учетными данными уже воплнил вход"));
+                                Platform.runLater(() -> showAlertWithHeaderText(str, "Клиент с такими учетными данными уже воплнил вход"));
+                            }else if (str.equals("Регистрация прошла успешно")){
+                                Platform.runLater(() -> {
+                                    showAlertWithHeaderText(str, "Вы можете осуществить вход по только что введенным учетным данным");
+                                    regStage.close(); //не работает :-((
+                                });
+                            }else if (str.equals("Регистрация закончилась неудачей")){
+                                Platform.runLater(() -> showAlertWithHeaderText(str, "Возможно возникла техническая проблема, попробуйте пройти регистрацию еще раз"));
+                            }else if (str.equals("Регистрация отклонена")){
+                                Platform.runLater(() -> showAlertWithHeaderText(str, "Такой логин или ник уже зарегестрированы"));
                             }
                         }
                         while (true){
@@ -121,20 +135,6 @@ public class ControllerVBox {
         vBox.getChildren().add(new TextMessage(msg));
     }
 
-    public void infoAbout() throws IOException {
-        Image imageInfo = new Image("file:images/info.jpg");
-        Stage infoWindow = new Stage();
-
-        Parent rootInfo = FXMLLoader.load(getClass().getResource("sample_info.fxml"));
-        infoWindow.setTitle("Info");
-        infoWindow.getIcons().add(imageInfo);
-        infoWindow.setScene(new Scene(rootInfo, 350, 100));
-        infoWindow.setResizable(false);
-        infoWindow.initOwner(MainVBox.getPrimaryStage());
-        infoWindow.initModality(Modality.WINDOW_MODAL);
-        infoWindow.show();
-    }
-
     public void clearWindow(){
         vBox.getChildren().clear();
     }
@@ -159,17 +159,41 @@ public class ControllerVBox {
     }
 
     public void tryToAuth(ActionEvent actionEvent) {
+        connectToDataBase("/auth ");
+    }
+
+    public void tryToReg(ActionEvent actionEvent) {
+        connectToDataBase("/reg ");
+    }
+
+    private void connectToDataBase(String operation){
         String login = loginField.getText();
         String password = passwordField.getText();
+        String connectionString = "";
+        boolean validData = false;
 
-        if (!login.isEmpty() & !password.isEmpty()) {
+        if (operation.equals("/reg ")){
+            String nick = nickField.getText();
+            connectionString = login + " " + nick + " " + password;
+            validData = !login.isEmpty() & !password.isEmpty() & !nick.isEmpty();
+        }else if (operation.equals("/auth ")){
+            connectionString = login + " " + password;
+            validData = !login.isEmpty() & !password.isEmpty();
+        }
+
+        if (validData) {
             if (socket == null || socket.isClosed()) {
                 connect();
             }
             try {
-                out.writeUTF("/auth " + login + " " + password);
+
+                out.writeUTF(operation + connectionString);
                 loginField.clear();
                 passwordField.clear();
+                if (operation.equals("/reg ")) {
+                    //nick = nickField.getText();
+                    nickField.clear();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -183,5 +207,38 @@ public class ControllerVBox {
         alert.setContentText(contentText);
 
         alert.showAndWait();
+    }
+
+    public void openRegistrationWindow(ActionEvent actionEvent){
+        try {
+            openWindow(regStage, "registration.fxml", "reg.jpg","Регистрация нового пользователя",350,40);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void openInfoWindow(){
+        try {
+            openWindow(infoStage,"sample_info.fxml","info.jpg","Info",350,100);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openWindow(Stage window, String fxmlFile, String iconFile, String title, int width, int height) throws IOException {
+        if (window.getScene()==null) {
+            Image image = new Image("file:images/" + iconFile);
+
+            Parent parent = FXMLLoader.load(getClass().getResource(fxmlFile));
+            window.setTitle(title);
+            window.getIcons().add(image);
+            window.setScene(new Scene(parent, width, height));
+            window.setResizable(false);
+            window.initOwner(MainVBox.getPrimaryStage());
+            window.initModality(Modality.WINDOW_MODAL);
+            window.show();
+        }else {
+            window.show();
+        }
     }
 }

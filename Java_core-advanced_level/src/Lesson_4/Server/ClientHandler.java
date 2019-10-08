@@ -35,7 +35,7 @@ class ClientHandler {
                                 String currentNick = AuthService.getNickByLoginAndPass(tokens[1], tokens[2]);
                                 if (currentNick!=null) {
                                     if (serv.checkNick(currentNick)) {
-                                        sendMessage("/authok");
+                                        sendMessage("/authOk");
                                         nick = currentNick;
                                         serv.subscribe(ClientHandler.this);
                                         break;
@@ -44,6 +44,18 @@ class ClientHandler {
                                     }
                                 }else {
                                     sendMessage("Ошибка аутентификаци");
+                                }
+                            }else if (str.startsWith("/reg")){
+                                String[] tokens = str.split(" ");
+                                boolean validRegData = AuthService.checkLoginAndNick(tokens[1], tokens[2]);
+                                if (validRegData){
+                                    if (AuthService.regNewUser(tokens[1], tokens[2], tokens[3])){
+                                        sendMessage("Регистрация прошла успешно");
+                                    }else {
+                                        sendMessage("Регистрация закончилась неудачей");
+                                    }
+                                }else {
+                                    sendMessage("Регистрация отклонена");
                                 }
                             }
                         }
