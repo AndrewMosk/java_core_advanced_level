@@ -83,7 +83,9 @@ public class ControllerTextArea implements Initializable {
         infoWindow.setTitle("Info");
         infoWindow.getIcons().add(imageInfo);
         infoWindow.setScene(new Scene(rootInfo, 350, 100));
-        infoWindow.initModality(Modality.WINDOW_MODAL); //почему-то не сработало
+        infoWindow.setResizable(false);
+        infoWindow.initOwner(MainFX_TextArea.getPrimaryStage());
+        infoWindow.initModality(Modality.WINDOW_MODAL);
         infoWindow.show();
     }
 
@@ -95,7 +97,6 @@ public class ControllerTextArea implements Initializable {
         Stage stage = MainFX_TextArea.getPrimaryStage();
         stage.close();
     }
-
 
     public void sendMsg(){
         try {

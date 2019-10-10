@@ -1,14 +1,15 @@
 package Lesson_4.VBox;
 
 import javafx.application.Platform;
+import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -16,10 +17,8 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.URL;
-import java.util.ResourceBundle;
 
-public class ControllerVBox implements Initializable {
+public class ControllerVBox {
     @FXML
     TextField textField;
     @FXML
@@ -34,56 +33,108 @@ public class ControllerVBox implements Initializable {
     private Socket socket;
     private DataInputStream in;
     private DataOutputStream out;
-
     private final String IP_ADDRESS = "localhost";
     private final int PORT = 8189;
+    private boolean isAuthorized;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    @FXML
+    HBox bottomPanel;
+    @FXML
+    TextField loginField;
+    @FXML
+    PasswordField passwordField;
+    @FXML
+    TextField nickField;
+    @FXML
+    VBox VBoxUpperPanel;
+
+    private Stage regStage = new Stage();
+    private Stage infoStage = new Stage();
+
+    private void setAuthorized(boolean isAuthorized){
+        this.isAuthorized = isAuthorized;
+        if (!isAuthorized){
+            VBoxUpperPanel.setVisible(true);
+            VBoxUpperPanel.setManaged(true);
+            bottomPanel.setVisible(false);
+            bottomPanel.setManaged(false);
+        }else {
+            VBoxUpperPanel.setVisible(false);
+            VBoxUpperPanel.setManaged(false);
+            bottomPanel.setVisible(true);
+            bottomPanel.setManaged(true);
+        }
+    }
+
+    private void setNewTitle(String nick){
+        Stage stage = MainVBox.getPrimaryStage();
+
+        if(nick.isEmpty()){
+            stage.setTitle("Chat");
+        }else {
+            String newTitle = stage.getTitle() + " " + nick;
+            stage.setTitle(newTitle);
+        }
+    }
+
+    private void connect() {
         try {
             socket = new Socket(IP_ADDRESS,PORT);
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
 
-            // нагуглил такое решение, но не сработало
-//            Task task = new Task<Void >() {
-//                @Override
-//                public  Void call()  {
-//                    try {
-//                        while (true) {
-//                            String msg = in.readUTF();
-//                            if (msg.equalsIgnoreCase("/end")) break;
-//                            vBox.getChildren().add(new TextMessage(msg));
-//                        }
-//                    }catch (IOException e){
-//                        e.printStackTrace();
-//                    }
-//                    return null;
-//                }
-//            };
-//            Thread t = new Thread(task);
-//            t.start();
-
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
+            Task<Void> task = new Task<Void>() {
+                @Override protected Void call() {
                     try {
                         while (true){
+                            String str = in.readUTF();
+                            if (str.startsWith("/authOk")){
+                                String[] tokens = str.split(" ");
+                                setAuthorized(true);
+                                Platform.runLater(() -> setNewTitle(tokens[1]));
+                                break;
+                            }else if (str.equals("Ошибка аутентификаци")){
+                                Platform.runLater(() -> showAlertWithHeaderText(str, "Неверно введена пара логин/пароль"));
+                            }else if (str.equals("Попытка повторного входа")){
+                                Platform.runLater(() -> showAlertWithHeaderText(str, "Клиент с такими учетными данными уже воплнил вход"));
+                            }else if (str.equals("Регистрация прошла успешно")){
+                                Platform.runLater(() -> {
+                                    showAlertWithHeaderText(str, "Вы можете осуществить вход по только что введенным учетным данным");
+                                    regStage.close(); //не работает :-((
+                                });
+                            }else if (str.equals("Регистрация закончилась неудачей")){
+                                Platform.runLater(() -> showAlertWithHeaderText(str, "Возможно возникла техническая проблема, попробуйте пройти регистрацию еще раз"));
+                            }else if (str.equals("Регистрация отклонена")){
+                                Platform.runLater(() -> showAlertWithHeaderText(str, "Такой логин или ник уже зарегестрированы"));
+                            }
+                        }
+                        while (true){
                             String msg = in.readUTF();
-                            //без этой конструкции не работает, хотя гугл говорит, что так делать плохо... типа поток в потоке вызывать
-                            Platform.runLater(() -> addText(msg));
+                            if (msg.equalsIgnoreCase("/clientClose")) {
+                                setAuthorized(false);
+                                Platform.runLater(() -> {
+                                    setNewTitle("");
+                                    vBox.getChildren().clear();
+                                });
+                            }else {
+                                Platform.runLater(() -> addText(msg));
+                            }
                         }
                     }catch (IOException e){
                         e.printStackTrace();
                     }finally {
                         try {
+                            in.close();
+                            out.close();
                             socket.close();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
+                    return null;
                 }
-            });
+            };
+            Thread thread =new Thread(task);
             thread.setDaemon(true);
             thread.start();
 
@@ -96,18 +147,6 @@ public class ControllerVBox implements Initializable {
         vBox.setFillWidth(false);
         vBox.setSpacing(10);
         vBox.getChildren().add(new TextMessage(msg));
-    }
-
-    public void infoAbout() throws IOException {
-        Image imageInfo = new Image("file:images/info.jpg");
-        Stage infoWindow = new Stage();
-
-        Parent rootInfo = FXMLLoader.load(getClass().getResource("sample_info.fxml"));
-        infoWindow.setTitle("Info");
-        infoWindow.getIcons().add(imageInfo);
-        infoWindow.setScene(new Scene(rootInfo, 350, 100));
-        infoWindow.initModality(Modality.WINDOW_MODAL); //почему-то не сработало
-        infoWindow.show();
     }
 
     public void clearWindow(){
@@ -130,6 +169,95 @@ public class ControllerVBox implements Initializable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public void tryToAuth(ActionEvent actionEvent) {
+        connectToDataBase("/auth ");
+    }
+
+    public void tryToReg(ActionEvent actionEvent) {
+        connectToDataBase("/reg ");
+    }
+
+    private void connectToDataBase(String operation){
+        String login = loginField.getText();
+        String password = passwordField.getText();
+        String connectionString = "";
+        boolean validData = false;
+
+        if (operation.equals("/reg ")){
+            String nick = nickField.getText();
+            connectionString = login + " " + nick + " " + password;
+            validData = !login.isEmpty() & !password.isEmpty() & !nick.isEmpty();
+        }else if (operation.equals("/auth ")){
+            connectionString = login + " " + password;
+            validData = !login.isEmpty() & !password.isEmpty();
+        }
+
+        if (validData) {
+            if (socket == null || socket.isClosed()) {
+                connect();
+            }
+            try {
+
+                out.writeUTF(operation + connectionString);
+                loginField.clear();
+                passwordField.clear();
+                if (operation.equals("/reg ")) {
+                    nickField.clear();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void showAlertWithHeaderText(String headerText, String contentText) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Внимание!");
+
+        if (headerText.equals("Регистрация прошла успешно")){
+            alert.setAlertType(Alert.AlertType.INFORMATION);
+            alert.setTitle("Поздравляем!");
+        }
+
+        alert.setHeaderText(headerText);
+        alert.setContentText(contentText);
+
+        alert.showAndWait();
+    }
+
+    public void openRegistrationWindow(ActionEvent actionEvent){
+        try {
+            openWindow(regStage, "registration.fxml", "reg.jpg","Регистрация нового пользователя",350,40);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void openInfoWindow(){
+        try {
+            openWindow(infoStage,"sample_info.fxml","info.jpg","Info",350,100);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void openWindow(Stage window, String fxmlFile, String iconFile, String title, int width, int height) throws IOException {
+        if (window.getScene()==null) {
+            Image image = new Image("file:images/" + iconFile);
+
+            Parent parent = FXMLLoader.load(getClass().getResource(fxmlFile));
+            window.setTitle(title);
+            window.getIcons().add(image);
+            window.setScene(new Scene(parent, width, height));
+            window.setResizable(false);
+            window.initOwner(MainVBox.getPrimaryStage());
+            window.initModality(Modality.WINDOW_MODAL);
+            window.show();
+        }else {
+            window.show();
         }
     }
 }
